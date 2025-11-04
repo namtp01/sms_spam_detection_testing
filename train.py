@@ -4,6 +4,7 @@ import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score # Import accuracy to see our score
 
 def preprocess_text(text):
     """Cleans text by lowercasing and removing punctuation."""
@@ -32,14 +33,31 @@ def train_model():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     # 4. Vectorize
-    tfidf = TfidfVectorizer(max_features=3000)
+    print("Vectorizing text with TF-IDF (including stop_words)...")
+    
+    # --- *** IMPROVEMENT HERE *** ---
+    # We added stop_words='english'
+    tfidf = TfidfVectorizer(max_features=3000, stop_words='english')
+    # --- ************************* ---
+    
     X_train_tfidf = tfidf.fit_transform(X_train)
+    X_test_tfidf = tfidf.transform(X_test) # Transform test data for accuracy check
     
     # 5. Train Model
-    model = MultinomialNB()
+    print("Training Naive Bayes model (with alpha=0.1)...")
+    
+    # --- *** IMPROVEMENT HERE *** ---
+    # We added alpha=0.1
+    model = MultinomialNB(alpha=0.1)
+    # --- ************************* ---
+    
     model.fit(X_train_tfidf, y_train)
     
     print("✅ Model trained successfully.")
+    
+    # (Optional) Check accuracy on the test set
+    y_pred = model.predict(X_test_tfidf)
+    print(f"Model Accuracy on Test Set: {accuracy_score(y_test, y_pred):.4f}")
     
     # 6. Save Model and Vectorizer
     with open('models/model.pkl', 'wb') as f:
@@ -48,7 +66,7 @@ def train_model():
     with open('models/tfidf.pkl', 'wb') as f:
         pickle.dump(tfidf, f)
         
-    print("💾 Model and TF-IDF vectorizer saved to 'models/' folder.")
+    print("💾 New, improved model and TF-IDF saved to 'models/' folder.")
 
 # This makes the script runnable
 if __name__ == "__main__":
